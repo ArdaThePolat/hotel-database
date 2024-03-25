@@ -1,0 +1,1988 @@
+DROP TABLE order_menu_item;
+DROP TABLE guest_reservation;
+DROP TABLE supply_room;
+DROP TABLE staff_supply;
+DROP TABLE dining_order;
+DROP TABLE menu_item;
+DROP TABLE dining_reservation;
+DROP TABLE supply;
+DROP TABLE reservation;
+DROP TABLE payment;
+DROP TABLE phone;
+DROP TABLE email;
+DROP TABLE room;
+DROP TABLE staff;
+DROP TABLE guest;
+
+CREATE TABLE guest (
+    national_id INT PRIMARY KEY,
+    full_name VARCHAR2(50) NOT NULL,
+    address VARCHAR2(200),
+    nationality VARCHAR2(20) NOT NULL,
+    date_of_birth DATE NOT NULL,
+    gender CHAR(1) NOT NULL
+);
+
+CREATE TABLE staff (
+    staff_id INT PRIMARY KEY,
+    full_name VARCHAR2(50) NOT NULL,
+    staff_position VARCHAR2(50) NOT NULL,
+    salary DECIMAL(10, 2) NOT NULL,
+    contact_info VARCHAR2(50) NOT NULL,
+    start_date DATE NOT NULL,
+    end_date DATE
+);
+
+CREATE TABLE room (
+    room_id INT PRIMARY KEY,
+    room_type VARCHAR2(50) NOT NULL,
+    price DECIMAL(10, 2) NOT NULL,
+    status VARCHAR2(10) NOT NULL,
+    facade VARCHAR2(50),
+    staff_id INT NOT NULL,
+    FOREIGN KEY (staff_id) REFERENCES staff(staff_id)
+);
+
+CREATE TABLE payment (
+    payment_id INT PRIMARY KEY,
+    amount DECIMAL(10, 2) NOT NULL,
+    payment_date DATE NOT NULL,
+    payment_method VARCHAR2(10) NOT NULL,
+    national_id INT NOT NULL,
+    FOREIGN KEY (national_id) REFERENCES guest(national_id) ON DELETE CASCADE
+);
+
+CREATE TABLE reservation (
+    reservation_id INT PRIMARY KEY,
+    check_in_date DATE NOT NULL,
+    check_out_date DATE NOT NULL,
+    number_of_adults INT NOT NULL,
+    number_of_children INT NOT NULL,
+    status VARCHAR2(20) NOT NULL,
+    room_id INT NOT NULL,
+    staff_id INT NOT NULL,
+    payment_id INT NOT NULL,
+    FOREIGN KEY (room_id) REFERENCES room(room_id),
+    FOREIGN KEY (staff_id) REFERENCES staff(staff_id),
+    FOREIGN KEY (payment_id) REFERENCES payment(payment_id)
+);
+
+CREATE TABLE supply (
+    supply_id INT PRIMARY KEY,
+    supply_type VARCHAR2(50) NOT NULL
+);
+
+CREATE TABLE dining_reservation (
+    dining_reservation_id INT PRIMARY KEY,
+    number_of_guests INT NOT NULL,
+    dining_time DATE NOT NULL,
+    national_id INT NOT NULL,
+    staff_id INT NOT NULL,
+    payment_id INT NOT NULL,
+    FOREIGN KEY (national_id) REFERENCES guest(national_id) ON DELETE CASCADE,
+    FOREIGN KEY (staff_id) REFERENCES staff(staff_id),
+    FOREIGN KEY (payment_id) REFERENCES payment(payment_id)
+);
+
+CREATE TABLE phone (
+    phone_number VARCHAR2(20) PRIMARY KEY,
+    country_code VARCHAR2(10) NOT NULL,
+    national_id INT NOT NULL,
+    FOREIGN KEY (national_id) REFERENCES guest(national_id) ON DELETE CASCADE
+);
+
+CREATE TABLE email (
+    email_address VARCHAR2(50) PRIMARY KEY,
+    national_id INT NOT NULL,
+    FOREIGN KEY (national_id) REFERENCES guest(national_id) ON DELETE CASCADE
+);
+
+CREATE TABLE dining_order (
+    order_id INT PRIMARY KEY,
+    order_time DATE NOT NULL,
+    status VARCHAR2(10) NOT NULL,
+    price DECIMAL(10, 2) NOT NULL,
+    dining_reservation_id INT NOT NULL,
+    FOREIGN KEY (dining_reservation_id) REFERENCES dining_reservation(dining_reservation_id) ON DELETE CASCADE
+);
+
+CREATE TABLE menu_item (
+    item_id INT PRIMARY KEY,
+    item_name VARCHAR2(50) NOT NULL,
+    item_category VARCHAR2(20) NOT NULL,
+    item_description VARCHAR2(100) NOT NULL,
+    price DECIMAL(10, 2) NOT NULL
+);
+
+CREATE TABLE guest_reservation (
+    national_id INT NOT NULL,
+    reservation_id INT NOT NULL,
+    PRIMARY KEY (national_id, reservation_id),
+    FOREIGN KEY (national_id) REFERENCES guest(national_id) ON DELETE CASCADE,
+    FOREIGN KEY (reservation_id) REFERENCES reservation(reservation_id) ON DELETE CASCADE
+);
+
+CREATE TABLE supply_room (
+    supply_id INT NOT NULL,
+    room_id INT NOT NULL,
+    quantity INT NOT NULL,
+    PRIMARY KEY (supply_id, room_id),
+    FOREIGN KEY (supply_id) REFERENCES supply(supply_id) ON DELETE CASCADE,
+    FOREIGN KEY (room_id) REFERENCES room(room_id) ON DELETE CASCADE
+);
+
+CREATE TABLE staff_supply (
+    staff_id INT NOT NULL,
+    supply_id INT NOT NULL,
+    PRIMARY KEY (staff_id, supply_id),
+    FOREIGN KEY (staff_id) REFERENCES staff(staff_id) ON DELETE CASCADE,
+    FOREIGN KEY (supply_id) REFERENCES supply(supply_id) ON DELETE CASCADE
+);
+
+CREATE TABLE order_menu_item (
+    order_id INT NOT NULL,
+    item_id INT NOT NULL,
+    PRIMARY KEY (order_id, item_id),
+    FOREIGN KEY (order_id) REFERENCES dining_order(order_id) ON DELETE CASCADE,
+    FOREIGN KEY (item_id) REFERENCES menu_item(item_id) ON DELETE CASCADE
+);
+
+INSERT INTO guest (national_id, full_name, address, nationality, date_of_birth, gender)
+VALUES (9994388975, 'John Doe', '1234 Main St, Anytown, USA', 'American', TO_DATE('1980-01-01', 'YYYY-MM-DD'), 'M');
+
+INSERT INTO guest (national_id, full_name, address, nationality, date_of_birth, gender)
+VALUES (6574007348, 'Jane Smith', '5678 Elm St, Othertown, USA', 'American', TO_DATE('1985-02-02', 'YYYY-MM-DD'), 'F');
+
+INSERT INTO guest (national_id, full_name, address, nationality, date_of_birth, gender)
+VALUES (6983765869, 'Bob Smith', '4321 Elm St, Somewhere, USA', 'British', TO_DATE('1975-08-20', 'YYYY-MM-DD'), 'M');
+
+INSERT INTO guest (national_id, full_name, address, nationality, date_of_birth, gender)
+VALUES (9990053251, 'Emily Johnson', '9876 Maple St, Anothercity, USA', 'Mexican', TO_DATE('1992-04-30', 'YYYY-MM-DD'), 'F');
+
+INSERT INTO guest (national_id, full_name, address, nationality, date_of_birth, gender)
+VALUES (9998244862, 'Michael Brown', '6543 Birch St, Yetanotherplace, USA', 'German', TO_DATE('1988-06-25', 'YYYY-MM-DD'), 'M');
+
+INSERT INTO guest (national_id, full_name, address, nationality, date_of_birth, gender)
+VALUES (7070592361, 'Samantha White', '3456 Cedar St, Farawaytown, USA', 'French', TO_DATE('1983-12-12', 'YYYY-MM-DD'), 'F');
+
+INSERT INTO guest (national_id, full_name, address, nationality, date_of_birth, gender)
+VALUES (4850106951, 'David Lee', '7890 Pine St, Yourtown, USA', 'Chinese', TO_DATE('1995-03-18', 'YYYY-MM-DD'), 'M');
+
+INSERT INTO guest (national_id, full_name, address, nationality, date_of_birth, gender)
+VALUES (9999491995, 'Sophia Rodriguez', '2345 Olive St, Newcity, USA', 'Italian', TO_DATE('1991-09-05', 'YYYY-MM-DD'), 'F');
+
+INSERT INTO guest (national_id, full_name, address, nationality, date_of_birth, gender)
+VALUES (7066077210, 'William Turner', '8765 Walnut St, Explorertown, USA', 'Spanish', TO_DATE('1978-11-08', 'YYYY-MM-DD'), 'M');
+
+INSERT INTO guest (national_id, full_name, address, nationality, date_of_birth, gender)
+VALUES (9999491996, 'Olivia Garcia', '1234 Spruce St, Somewherelse, USA', 'Brazilian', TO_DATE('1986-07-22', 'YYYY-MM-DD'), 'F');
+
+INSERT INTO guest (national_id, full_name, address, nationality, date_of_birth, gender)
+VALUES (6762636101, 'Ethan Kim', '5678 Pine St, Adventurecity, USA', 'Korean', TO_DATE('1993-02-28', 'YYYY-MM-DD'), 'M');
+
+INSERT INTO guest (national_id, full_name, address, nationality, date_of_birth, gender)
+VALUES (9999799450, 'Ava Nguyen', '4321 Cedar St, Dreamland, USA', 'Vietnamese', TO_DATE('1984-05-14', 'YYYY-MM-DD'), 'F');
+
+INSERT INTO guest (national_id, full_name, address, nationality, date_of_birth, gender)
+VALUES (6636114576, 'Liam Patel', '9876 Birch St, Fantasytown, USA', 'Indian', TO_DATE('1982-10-02', 'YYYY-MM-DD'), 'M');
+
+INSERT INTO guest (national_id, full_name, address, nationality, date_of_birth, gender)
+VALUES (9991122087, 'Emma Chen', '6543 Olive St, Wonderland, USA', 'Taiwanese', TO_DATE('1994-06-08', 'YYYY-MM-DD'), 'F');
+
+INSERT INTO guest (national_id, full_name, address, nationality, date_of_birth, gender)
+VALUES (4485197514, 'Noah Ali', '3456 Walnut St, Magicland, USA', 'Pakistani', TO_DATE('1979-04-17', 'YYYY-MM-DD'), 'M');
+
+INSERT INTO guest (national_id, full_name, address, nationality, date_of_birth, gender)
+VALUES (4485352514, 'Mia Hernandez', '7890 Spruce St, Mysterytown, USA', 'Mexican', TO_DATE('1987-08-03', 'YYYY-MM-DD'), 'F');
+
+INSERT INTO guest (national_id, full_name, address, nationality, date_of_birth, gender)
+VALUES (9995435896, 'James Kim', '2345 Cedar St, Secretcity, USA', 'Korean', TO_DATE('1996-01-11', 'YYYY-MM-DD'), 'M');
+
+INSERT INTO guest (national_id, full_name, address, nationality, date_of_birth, gender)
+VALUES (6737426646, 'Isabella Wong', '8765 Pine St, Enchantedtown, USA', 'Chinese', TO_DATE('1981-03-27', 'YYYY-MM-DD'), 'F');
+
+INSERT INTO guest (national_id, full_name, address, nationality, date_of_birth, gender)
+VALUES (99957545896, 'Alexander Kumar', '1234 Elm St, Magictown, USA', 'Indian', TO_DATE('1997-07-14', 'YYYY-MM-DD'), 'M');
+
+INSERT INTO guest (national_id, full_name, address, nationality, date_of_birth, gender)
+VALUES (4485352515, 'Berk Şengül', '12075 sk., Gülbahçe, Turkey', 'Turkish', TO_DATE('2002-04-17', 'YYYY-MM-DD'), 'M');
+
+INSERT INTO guest (national_id, full_name, address, nationality, date_of_birth, gender)
+VALUES (9993750441, 'Emily Johnson', '5678 Oak St, Pleasantville, USA', 'American', TO_DATE('1985-02-28', 'YYYY-MM-DD'), 'F');
+
+INSERT INTO guest (national_id, full_name, address, nationality, date_of_birth, gender)
+VALUES (6325067460, 'Mohammed Ali', '7890 Maple St, Serenity City, USA', 'Saudi Arabian', TO_DATE('1980-10-05', 'YYYY-MM-DD'), 'M');
+
+INSERT INTO guest (national_id, full_name, address, nationality, date_of_birth, gender)
+VALUES (6081625664, 'Sophie Martinez', '1357 Pine St, Tranquil Town, USA', 'Mexican', TO_DATE('1992-12-18', 'YYYY-MM-DD'), 'F');
+
+INSERT INTO guest (national_id, full_name, address, nationality, date_of_birth, gender)
+VALUES (9993341142, 'David Smith', '2468 Birch St, Harmony Village, USA', 'Canadian', TO_DATE('1988-06-30', 'YYYY-MM-DD'), 'M');
+
+INSERT INTO guest (national_id, full_name, address, nationality, date_of_birth, gender)
+VALUES (9998729564, 'Emma Johnson', '5678 Oak St, Pleasantville, USA', 'American', TO_DATE('2010-08-15', 'YYYY-MM-DD'), 'F');
+
+INSERT INTO guest (national_id, full_name, address, nationality, date_of_birth, gender)
+VALUES (6213867562, 'Ali Jr.', '7890 Maple St, Serenity City, USA', 'Saudi Arabian', TO_DATE('2015-04-20', 'YYYY-MM-DD'), 'M');
+
+INSERT INTO guest (national_id, full_name, address, nationality, date_of_birth, gender)
+VALUES (9997355121, 'Isabella Martinez', '1357 Pine St, Tranquil Town, USA', 'Mexican', TO_DATE('2012-06-10', 'YYYY-MM-DD'), 'F');
+
+INSERT INTO guest (national_id, full_name, address, nationality, date_of_birth, gender)
+VALUES (9998610443, 'Michael Brown', '4321 Walnut St, Joyful City, USA', 'British', TO_DATE('1976-03-12', 'YYYY-MM-DD'), 'M');
+
+INSERT INTO guest (national_id, full_name, address, nationality, date_of_birth, gender)
+VALUES (4618102209, 'Lina Chen', '8765 Cedar St, Harmony Hills, USA', 'Chinese', TO_DATE('1989-11-24', 'YYYY-MM-DD'), 'F');
+
+INSERT INTO guest (national_id, full_name, address, nationality, date_of_birth, gender)
+VALUES (9994436155, 'Carlos Rodriguez', '9876 Sycamore St, Blissville, USA', 'Mexican', TO_DATE('1983-09-08', 'YYYY-MM-DD'), 'M');
+
+INSERT INTO guest (national_id, full_name, address, nationality, date_of_birth, gender)
+VALUES (4495260308, 'Sophia Brown', '4321 Walnut St, Joyful City, USA', 'British', TO_DATE('2010-05-18', 'YYYY-MM-DD'), 'F');
+
+INSERT INTO guest (national_id, full_name, address, nationality, date_of_birth, gender)
+VALUES (9999641555, 'Charlie Chen', '8765 Cedar St, Harmony Hills, USA', 'Chinese', TO_DATE('2014-02-03', 'YYYY-MM-DD'), 'M');
+
+INSERT INTO guest (national_id, full_name, address, nationality, date_of_birth, gender)
+VALUES (4599355488, 'Gabriel Rodriguez', '9876 Sycamore St, Blissville, USA', 'Mexican', TO_DATE('2012-08-22', 'YYYY-MM-DD'), 'M');
+
+INSERT INTO guest (national_id, full_name, address, nationality, date_of_birth, gender)
+VALUES (9997860047, 'Aisha Patel', '3456 Pine St, Serendipity City, USA', 'Indian', TO_DATE('1995-04-07', 'YYYY-MM-DD'), 'F');
+
+INSERT INTO staff (staff_id, full_name, staff_position, salary, contact_info, start_date, end_date)
+VALUES (1, 'Alice Johnson', 'Manager', 50000.00, 'alice.johnson@email.com', TO_DATE('2015-01-01', 'YYYY-MM-DD'), NULL);
+
+INSERT INTO staff (staff_id, full_name, staff_position, salary, contact_info, start_date, end_date)
+VALUES (2, 'Bob Williams', 'Front Desk', 30000.00, 'bob.williams@email.com', TO_DATE('2016-02-01', 'YYYY-MM-DD'), NULL);
+
+INSERT INTO staff (staff_id, full_name, staff_position, salary, contact_info, start_date, end_date)
+VALUES (3, 'Charlie Davis', 'Sales Representative', 40000.00, 'charlie.davis@email.com', TO_DATE('2017-03-01', 'YYYY-MM-DD'), TO_DATE('2019-06-02', 'YYYY-MM-DD'));
+
+INSERT INTO staff (staff_id, full_name, staff_position, salary, contact_info, start_date, end_date)
+VALUES (4, 'Diana Miller', 'Accountant', 45000.00, 'diana.miller@email.com', TO_DATE('2018-04-01', 'YYYY-MM-DD'), NULL);
+
+INSERT INTO staff (staff_id, full_name, staff_position, salary, contact_info, start_date, end_date)
+VALUES (5, 'Ethan Wilson', 'Housekeeping', 60000.00, 'ethan.wilson@email.com', TO_DATE('2019-05-01', 'YYYY-MM-DD'), TO_DATE('2021-07-03', 'YYYY-MM-DD'));
+
+INSERT INTO staff (staff_id, full_name, staff_position, salary, contact_info, start_date, end_date)
+VALUES (6, 'Fiona Brown', 'Dining Front Desk', 48000.00, 'fiona.brown@email.com', TO_DATE('2020-06-01', 'YYYY-MM-DD'), NULL);
+
+INSERT INTO staff (staff_id, full_name, staff_position, salary, contact_info, start_date, end_date)
+VALUES (7, 'Gary Taylor', 'Manager', 55000.00, 'gary.taylor@email.com', TO_DATE('2021-07-01', 'YYYY-MM-DD'), NULL);
+
+INSERT INTO staff (staff_id, full_name, staff_position, salary, contact_info, start_date, end_date)
+VALUES (8, 'Hannah Anderson', 'Chef', 38000.00, 'hannah.anderson@email.com', TO_DATE('2019-08-01', 'YYYY-MM-DD'), NULL);
+
+INSERT INTO staff (staff_id, full_name, staff_position, salary, contact_info, start_date, end_date)
+VALUES (9, 'Ian Clark', 'Project Manager', 65000.00, 'ian.clark@email.com', TO_DATE('2020-09-01', 'YYYY-MM-DD'), NULL);
+
+INSERT INTO staff (staff_id, full_name, staff_position, salary, contact_info, start_date, end_date)
+VALUES (10, 'Julia Turner', 'Front Desk', 42000.00, 'julia.turner@email.com', TO_DATE('2021-10-01', 'YYYY-MM-DD'), TO_DATE('2022-02-15', 'YYYY-MM-DD'));
+
+INSERT INTO staff (staff_id, full_name, staff_position, salary, contact_info, start_date, end_date)
+VALUES (11, 'Kevin Hall', 'Bellboy', 32000.00, 'kevin.hall@email.com', TO_DATE('2018-11-01', 'YYYY-MM-DD'), NULL);
+
+INSERT INTO staff (staff_id, full_name, staff_position, salary, contact_info, start_date, end_date)
+VALUES (12, 'Linda White', 'Housekeeping', 52000.00, 'linda.white@email.com', TO_DATE('2017-12-01', 'YYYY-MM-DD'), NULL);
+
+INSERT INTO staff (staff_id, full_name, staff_position, salary, contact_info, start_date, end_date)
+VALUES (13, 'Michael Garcia', 'Housekeeping', 70000.00, 'michael.garcia@email.com', TO_DATE('2016-01-01', 'YYYY-MM-DD'), NULL);
+
+INSERT INTO staff (staff_id, full_name, staff_position, salary, contact_info, start_date, end_date)
+VALUES (14, 'Natalie Martinez', 'Front Desk', 45000.00, 'natalie.martinez@email.com', TO_DATE('2015-07-30', 'YYYY-MM-DD'), NULL);
+
+INSERT INTO staff (staff_id, full_name, staff_position, salary, contact_info, start_date, end_date)
+VALUES (15, 'Oscar Lee', 'Chef', 48000.00, 'oscar.lee@email.com', TO_DATE('2019-03-01', 'YYYY-MM-DD'), TO_DATE('2020-01-10', 'YYYY-MM-DD'));
+
+INSERT INTO staff (staff_id, full_name, staff_position, salary, contact_info, start_date, end_date)
+VALUES (16, 'Penelope Scott', 'Dining Front Desk', 55000.00, 'penelope.scott@email.com', TO_DATE('2020-04-01', 'YYYY-MM-DD'), NULL);
+
+INSERT INTO staff (staff_id, full_name, staff_position, salary, contact_info, start_date, end_date)
+VALUES (17, 'Quincy Adams', 'Dining Front Desk', 75000.00, 'quincy.adams@email.com', TO_DATE('2021-05-01', 'YYYY-MM-DD'), NULL);
+
+INSERT INTO staff (staff_id, full_name, staff_position, salary, contact_info, start_date, end_date)
+VALUES (18, 'Rebecca Baker', 'Accountant', 48000.00, 'rebecca.baker@email.com', TO_DATE('2018-06-01', 'YYYY-MM-DD'), NULL);
+
+INSERT INTO staff (staff_id, full_name, staff_position, salary, contact_info, start_date, end_date)
+VALUES (19, 'Samuel Hall', 'Front Desk', 60000.00, 'samuel.hall@email.com', TO_DATE('2017-07-01', 'YYYY-MM-DD'), TO_DATE('2023-08-12', 'YYYY-MM-DD'));
+
+INSERT INTO staff (staff_id, full_name, staff_position, salary, contact_info, start_date, end_date)
+VALUES (20, 'Tiffany Wilson', 'Housekeeping', 42000.00, 'tiffany.wilson@email.com', TO_DATE('2016-08-01', 'YYYY-MM-DD'), NULL);
+
+INSERT INTO room (room_id, room_type, price, status, facade, staff_id)
+VALUES (1, 'Triple Room', 150.00, 'Available', 'Ocean View', 5);
+
+INSERT INTO room (room_id, room_type, price, status, facade, staff_id)
+VALUES(2, 'Triple Room', 150.00, 'Available', 'City View', 12);
+
+INSERT INTO room (room_id, room_type, price, status, facade, staff_id)
+VALUES (3, 'Double Room', 100.00, 'Occupied', 'Mountain View', 13);
+
+INSERT INTO room (room_id, room_type, price, status, facade, staff_id)
+VALUES (4, 'Single Room', 50.00, 'Available', 'Pool View', 12);
+
+INSERT INTO room (room_id, room_type, price, status, facade, staff_id)
+VALUES (5, 'Single Room', 50.00, 'Available', 'Garden View', 12);
+
+INSERT INTO room (room_id, room_type, price, status, facade, staff_id)
+VALUES (6, 'Double Room', 100.00, 'Available', 'City View', 13);
+
+INSERT INTO room (room_id, room_type, price, status, facade, staff_id)
+VALUES (7, 'Double Room', 100.00, 'Available', 'Mountain View', 5);
+
+INSERT INTO room (room_id, room_type, price, status, facade, staff_id)
+VALUES (8, 'Single Room', 50.00, 'Available', 'Ocean View', 5);
+
+INSERT INTO room (room_id, room_type, price, status, facade, staff_id)
+VALUES (9, 'Double Room', 100.00, 'Available', 'Garden View', 12);
+
+INSERT INTO room (room_id, room_type, price, status, facade, staff_id)
+VALUES (10, 'Double Room', 100.00, 'Available', 'City View', 13);
+
+INSERT INTO room (room_id, room_type, price, status, facade, staff_id)
+VALUES (11, 'Single Room', 50.00, 'Available', 'Ocean View', 5);
+
+INSERT INTO room (room_id, room_type, price, status, facade, staff_id)
+VALUES (12, 'Single Room', 50.00, 'Available', 'Pool View', 12);
+
+INSERT INTO room (room_id, room_type, price, status, facade, staff_id)
+VALUES (13, 'Single Room', 50.00, 'Available', 'Garden View', 13);
+
+INSERT INTO room (room_id, room_type, price, status, facade, staff_id)
+VALUES (14, 'Single Room', 50.00, 'Available', 'Mountain View', 5);
+
+INSERT INTO room (room_id, room_type, price, status, facade, staff_id)
+VALUES (15, 'Single Room', 50.00, 'Available', 'Ocean View', 20);
+
+INSERT INTO room (room_id, room_type, price, status, facade, staff_id)
+VALUES (16, 'Single Room', 50.00, 'Occupied', 'City View', 13);
+
+INSERT INTO room (room_id, room_type, price, status, facade, staff_id)
+VALUES (17, 'Single Room', 50.00, 'Occupied', 'Mountain View', 15);
+
+INSERT INTO room (room_id, room_type, price, status, facade, staff_id)
+VALUES (18, 'Double Room', 100.00, 'Occupied', 'Garden View', 20);
+
+INSERT INTO room (room_id, room_type, price, status, facade, staff_id)
+VALUES (19, 'Single Room', 50.00, 'Available', 'Ocean View', 20);
+
+INSERT INTO room (room_id, room_type, price, status, facade, staff_id)
+VALUES (20, 'Single Room', 50.00, 'Available', 'City View', 20);
+
+INSERT INTO payment (payment_id, amount, payment_date, payment_method, national_id)
+VALUES (1, 600.00, TO_DATE('2023-11-01', 'YYYY-MM-DD'), 'Card', 9994388975);
+
+INSERT INTO payment (payment_id, amount, payment_date, payment_method, national_id)
+VALUES (2, 600.00, TO_DATE('2023-11-02', 'YYYY-MM-DD'), 'Card', 6574007348);
+
+INSERT INTO payment (payment_id, amount, payment_date, payment_method, national_id)
+VALUES (3, 200.00, TO_DATE('2023-11-04', 'YYYY-MM-DD'), 'Card', 6983765869);
+
+INSERT INTO payment (payment_id, amount, payment_date, payment_method, national_id)
+VALUES (4, 300.00, TO_DATE('2023-10-23', 'YYYY-MM-DD'), 'Card', 9990053251);
+
+INSERT INTO payment (payment_id, amount, payment_date, payment_method, national_id)
+VALUES (5, 400.00, TO_DATE('2023-11-06', 'YYYY-MM-DD'), 'Card', 9998244862);
+
+INSERT INTO payment (payment_id, amount, payment_date, payment_method, national_id)
+VALUES (6, 400.00, TO_DATE('2023-09-07', 'YYYY-MM-DD'), 'Card', 7070592361);
+
+INSERT INTO payment (payment_id, amount, payment_date, payment_method, national_id)
+VALUES (7, 400.00, TO_DATE('2022-05-10', 'YYYY-MM-DD'), 'Card', 4850106951);
+
+INSERT INTO payment (payment_id, amount, payment_date, payment_method, national_id)
+VALUES (8, 200.00, TO_DATE('2023-11-12', 'YYYY-MM-DD'), 'Card', 9999491995);
+
+INSERT INTO payment (payment_id, amount, payment_date, payment_method, national_id)
+VALUES (9, 200.00, TO_DATE('2023-11-13', 'YYYY-MM-DD'), 'Card', 7066077210);
+
+INSERT INTO payment (payment_id, amount, payment_date, payment_method, national_id)
+VALUES (10, 200.00, TO_DATE('2023-06-14', 'YYYY-MM-DD'), 'Card', 9999491996);
+
+INSERT INTO payment (payment_id, amount, payment_date, payment_method, national_id)
+VALUES (11, 200.00, TO_DATE('2023-11-15', 'YYYY-MM-DD'), 'Card', 6762636101);
+
+INSERT INTO payment (payment_id, amount, payment_date, payment_method, national_id)
+VALUES (12, 400.00, TO_DATE('2023-11-24', 'YYYY-MM-DD'), 'Card', 9999799450);
+
+INSERT INTO payment (payment_id, amount, payment_date, payment_method, national_id)
+VALUES (13, 300.00, TO_DATE('2023-11-23', 'YYYY-MM-DD'), 'Card', 6636114576);
+
+INSERT INTO payment (payment_id, amount, payment_date, payment_method, national_id)
+VALUES (14, 650.00, TO_DATE('2023-11-17', 'YYYY-MM-DD'), 'Card', 9991122087);
+
+INSERT INTO payment (payment_id, amount, payment_date, payment_method, national_id)
+VALUES (15, 800.00, TO_DATE('2023-11-25', 'YYYY-MM-DD'), 'Card', 4485197514);
+
+INSERT INTO payment (payment_id, amount, payment_date, payment_method, national_id)
+VALUES (16, 200.00, TO_DATE('2023-11-19', 'YYYY-MM-DD'), 'Card', 4485352514);
+
+INSERT INTO payment (payment_id, amount, payment_date, payment_method, national_id)
+VALUES (17, 200.00, TO_DATE('2024-07-20', 'YYYY-MM-DD'), 'Card', 9995435896);
+
+INSERT INTO payment (payment_id, amount, payment_date, payment_method, national_id)
+VALUES (18, 150.00, TO_DATE('2023-12-09', 'YYYY-MM-DD'), 'Card', 6737426646);
+
+INSERT INTO payment (payment_id, amount, payment_date, payment_method, national_id)
+VALUES (19, 100.00, TO_DATE('2023-11-30', 'YYYY-MM-DD'), 'Card', 99957545896);
+
+INSERT INTO payment (payment_id, amount, payment_date, payment_method, national_id)
+VALUES (20, 200.00, TO_DATE('2024-06-11', 'YYYY-MM-DD'), 'Card', 4485352515);
+
+INSERT INTO payment (payment_id, amount, payment_date, payment_method, national_id)
+VALUES (21, 25.00, TO_DATE('2023-12-02', 'YYYY-MM-DD'), 'Card', 9994388975);
+
+INSERT INTO payment (payment_id, amount, payment_date, payment_method, national_id)
+VALUES (22, 22.00, TO_DATE('2023-12-02', 'YYYY-MM-DD'), 'Card', 6574007348);
+
+INSERT INTO payment (payment_id, amount, payment_date, payment_method, national_id)
+VALUES (23, 18.00, TO_DATE('2023-12-05', 'YYYY-MM-DD'), 'Card', 6983765869);
+
+INSERT INTO payment (payment_id, amount, payment_date, payment_method, national_id)
+VALUES (24, 12.00, TO_DATE('2023-11-25', 'YYYY-MM-DD'), 'Cash', 9990053251);
+
+INSERT INTO payment (payment_id, amount, payment_date, payment_method, national_id)
+VALUES (25, 20.00, TO_DATE('2023-12-08', 'YYYY-MM-DD'), 'Card', 9998244862);
+
+INSERT INTO payment (payment_id, amount, payment_date, payment_method, national_id)
+VALUES (26, 15.00, TO_DATE('2023-10-09', 'YYYY-MM-DD'), 'Cash', 7070592361);
+
+INSERT INTO payment (payment_id, amount, payment_date, payment_method, national_id)
+VALUES (27, 8.00, TO_DATE('2022-06-13', 'YYYY-MM-DD'), 'Card', 4850106951);
+
+INSERT INTO payment (payment_id, amount, payment_date, payment_method, national_id)
+VALUES (28, 16.00, TO_DATE('2023-12-13', 'YYYY-MM-DD'), 'Cash', 9999491995);
+
+INSERT INTO payment (payment_id, amount, payment_date, payment_method, national_id)
+VALUES (29, 17.00, TO_DATE('2023-12-16', 'YYYY-MM-DD'), 'Card', 7066077210);
+
+INSERT INTO payment (payment_id, amount, payment_date, payment_method, national_id)
+VALUES (30, 10.00, TO_DATE('2023-07-14', 'YYYY-MM-DD'), 'Cash', 9999491996);
+
+INSERT INTO payment (payment_id, amount, payment_date, payment_method, national_id)
+VALUES (31, 14.00, TO_DATE('2023-12-17', 'YYYY-MM-DD'), 'Card', 6762636101);
+
+INSERT INTO payment (payment_id, amount, payment_date, payment_method, national_id)
+VALUES (32, 13.00, TO_DATE('2023-12-27', 'YYYY-MM-DD'), 'Cash', 9999799450);
+
+INSERT INTO payment (payment_id, amount, payment_date, payment_method, national_id)
+VALUES (33, 7.00, TO_DATE('2023-12-28', 'YYYY-MM-DD'), 'Card', 6636114576);
+
+INSERT INTO payment (payment_id, amount, payment_date, payment_method, national_id)
+VALUES (34, 19.00, TO_DATE('2023-12-20', 'YYYY-MM-DD'), 'Cash', 9991122087);
+
+INSERT INTO payment (payment_id, amount, payment_date, payment_method, national_id)
+VALUES (35, 11.00, TO_DATE('2023-01-01', 'YYYY-MM-DD'), 'Card', 4485197514);
+
+INSERT INTO payment (payment_id, amount, payment_date, payment_method, national_id)
+VALUES (36, 9.00, TO_DATE('2023-12-03', 'YYYY-MM-DD'), 'Card', 9994388975);
+
+INSERT INTO payment (payment_id, amount, payment_date, payment_method, national_id)
+VALUES (37, 16.00, TO_DATE('2023-12-03', 'YYYY-MM-DD'), 'Card', 6574007348);
+
+INSERT INTO payment (payment_id, amount, payment_date, payment_method, national_id)
+VALUES (38, 13.00, TO_DATE('2023-12-06', 'YYYY-MM-DD'), 'Card', 6983765869);
+
+INSERT INTO payment (payment_id, amount, payment_date, payment_method, national_id)
+VALUES (39, 8.00, TO_DATE('2023-11-26', 'YYYY-MM-DD'), 'Cash', 9990053251);
+
+INSERT INTO payment (payment_id, amount, payment_date, payment_method, national_id)
+VALUES (40, 10.00, TO_DATE('2023-12-09', 'YYYY-MM-DD'), 'Card', 9998244862);
+
+INSERT INTO reservation (reservation_id, check_in_date, check_out_date, number_of_adults, number_of_children, status, room_id, staff_id, payment_id)
+VALUES (1, TO_DATE('2023-12-01', 'YYYY-MM-DD'), TO_DATE('2023-12-05', 'YYYY-MM-DD'), 3, 0, 'checked-out', 1, 2, 1);
+
+INSERT INTO reservation (reservation_id, check_in_date, check_out_date, number_of_adults, number_of_children, status, room_id, staff_id, payment_id)
+VALUES (2, TO_DATE('2023-12-02', 'YYYY-MM-DD'), TO_DATE('2023-12-06', 'YYYY-MM-DD'), 3, 0, 'checked-out', 2, 14, 2);
+
+INSERT INTO reservation (reservation_id, check_in_date, check_out_date, number_of_adults, number_of_children, status, room_id, staff_id, payment_id)
+VALUES (3, TO_DATE('2023-12-04', 'YYYY-MM-DD'), TO_DATE('2023-12-08', 'YYYY-MM-DD'), 1, 1, 'checked-out', 4, 14, 3);
+
+INSERT INTO reservation (reservation_id, check_in_date, check_out_date, number_of_adults, number_of_children, status, room_id, staff_id, payment_id)
+VALUES (4, TO_DATE('2023-11-23', 'YYYY-MM-DD'), TO_DATE('2023-11-29', 'YYYY-MM-DD'), 1, 0, 'checked-out', 5, 2, 4);
+
+INSERT INTO reservation (reservation_id, check_in_date, check_out_date, number_of_adults, number_of_children, status, room_id, staff_id, payment_id)
+VALUES (5, TO_DATE('2023-12-06', 'YYYY-MM-DD'), TO_DATE('2023-12-10', 'YYYY-MM-DD'), 2, 0, 'checked-out', 6, 2, 5);
+
+INSERT INTO reservation (reservation_id, check_in_date, check_out_date, number_of_adults, number_of_children, status, room_id, staff_id, payment_id)
+VALUES (6, TO_DATE('2023-10-07', 'YYYY-MM-DD'), TO_DATE('2023-10-11', 'YYYY-MM-DD'), 2, 0, 'checked-out', 7, 2, 6);
+
+INSERT INTO reservation (reservation_id, check_in_date, check_out_date, number_of_adults, number_of_children, status, room_id, staff_id, payment_id)
+VALUES (7, TO_DATE('2022-06-10', 'YYYY-MM-DD'), TO_DATE('2022-06-14', 'YYYY-MM-DD'), 2, 0, 'checked-out', 10, 14, 7);
+
+INSERT INTO reservation (reservation_id, check_in_date, check_out_date, number_of_adults, number_of_children, status, room_id, staff_id, payment_id)
+VALUES (8, TO_DATE('2023-12-12', 'YYYY-MM-DD'), TO_DATE('2023-12-16', 'YYYY-MM-DD'), 1, 0, 'checked-out', 12, 14, 8);
+
+INSERT INTO reservation (reservation_id, check_in_date, check_out_date, number_of_adults, number_of_children, status, room_id, staff_id, payment_id)
+VALUES (9, TO_DATE('2023-12-13', 'YYYY-MM-DD'), TO_DATE('2023-12-17', 'YYYY-MM-DD'), 1, 1, 'checked-out', 13, 2, 9);
+
+INSERT INTO reservation (reservation_id, check_in_date, check_out_date, number_of_adults, number_of_children, status, room_id, staff_id, payment_id)
+VALUES (10, TO_DATE('2023-07-14', 'YYYY-MM-DD'), TO_DATE('2023-07-18', 'YYYY-MM-DD'), 1, 0, 'checked-out', 14, 2, 10);
+
+INSERT INTO reservation (reservation_id, check_in_date, check_out_date, number_of_adults, number_of_children, status, room_id, staff_id, payment_id)
+VALUES (11, TO_DATE('2023-12-15', 'YYYY-MM-DD'), TO_DATE('2023-12-19', 'YYYY-MM-DD'), 1, 1, 'checked-out', 15, 2, 11);
+
+INSERT INTO reservation (reservation_id, check_in_date, check_out_date, number_of_adults, number_of_children, status, room_id, staff_id, payment_id)
+VALUES (12, TO_DATE('2023-12-24', 'YYYY-MM-DD'), TO_DATE('2023-12-28', 'YYYY-MM-DD'), 1, 2, 'checked-in', 3, 14, 12);
+
+INSERT INTO reservation (reservation_id, check_in_date, check_out_date, number_of_adults, number_of_children, status, room_id, staff_id, payment_id)
+VALUES (13, TO_DATE('2023-12-23', 'YYYY-MM-DD'), TO_DATE('2023-12-29', 'YYYY-MM-DD'), 1, 0, 'checked-in', 16, 2, 13);
+
+INSERT INTO reservation (reservation_id, check_in_date, check_out_date, number_of_adults, number_of_children, status, room_id, staff_id, payment_id)
+VALUES (14, TO_DATE('2023-12-17', 'YYYY-MM-DD'), TO_DATE('2023-12-30', 'YYYY-MM-DD'), 1, 0, 'checked-in', 17, 14, 14);
+
+INSERT INTO reservation (reservation_id, check_in_date, check_out_date, number_of_adults, number_of_children, status, room_id, staff_id, payment_id)
+VALUES (15, TO_DATE('2023-12-25', 'YYYY-MM-DD'), TO_DATE('2024-01-02', 'YYYY-MM-DD'), 2, 0, 'checked-in', 18, 2, 15);
+
+INSERT INTO reservation (reservation_id, check_in_date, check_out_date, number_of_adults, number_of_children, status, room_id, staff_id, payment_id)
+VALUES (16, TO_DATE('2023-12-19', 'YYYY-MM-DD'), TO_DATE('2023-12-23', 'YYYY-MM-DD'), 1, 0, 'pending', 19, 14, 16);
+
+INSERT INTO reservation (reservation_id, check_in_date, check_out_date, number_of_adults, number_of_children, status, room_id, staff_id, payment_id)
+VALUES (17, TO_DATE('2024-08-20', 'YYYY-MM-DD'), TO_DATE('2024-08-24', 'YYYY-MM-DD'), 1, 0, 'pending', 20, 14, 17);
+
+INSERT INTO reservation (reservation_id, check_in_date, check_out_date, number_of_adults, number_of_children, status, room_id, staff_id, payment_id)
+VALUES (18, TO_DATE('2024-01-09', 'YYYY-MM-DD'), TO_DATE('2023-01-12', 'YYYY-MM-DD'), 1, 0, 'pending', 8, 14, 18);
+
+INSERT INTO reservation (reservation_id, check_in_date, check_out_date, number_of_adults, number_of_children, status, room_id, staff_id, payment_id)
+VALUES (19, TO_DATE('2023-12-31', 'YYYY-MM-DD'), TO_DATE('2024-01-01', 'YYYY-MM-DD'), 2, 0, 'pending', 9, 2, 19);
+
+INSERT INTO reservation (reservation_id, check_in_date, check_out_date, number_of_adults, number_of_children, status, room_id, staff_id, payment_id)
+VALUES (20, TO_DATE('2024-07-11', 'YYYY-MM-DD'), TO_DATE('2024-07-15', 'YYYY-MM-DD'), 1, 0, 'pending', 11, 14, 20);
+
+INSERT INTO supply (supply_id, supply_type)
+VALUES (1, 'Toiletries');
+
+INSERT INTO supply (supply_id, supply_type)
+VALUES (2, 'Cleaning Supplies');
+
+INSERT INTO supply (supply_id, supply_type)
+VALUES (3, 'Bed Linens');
+
+INSERT INTO supply (supply_id, supply_type)
+VALUES (4, 'Towels');
+
+INSERT INTO supply (supply_id, supply_type)
+VALUES (5, 'Dining Utensils');
+
+INSERT INTO supply (supply_id, supply_type)
+VALUES (6, 'Office Supplies');
+
+INSERT INTO supply (supply_id, supply_type)
+VALUES (7, 'Electronics');
+
+INSERT INTO supply (supply_id, supply_type)
+VALUES (8, 'Kitchenware');
+
+INSERT INTO supply (supply_id, supply_type)
+VALUES (9, 'Furniture');
+
+INSERT INTO supply (supply_id, supply_type)
+VALUES (10, 'Lighting');
+
+INSERT INTO supply (supply_id, supply_type)
+VALUES (11, 'Decorations');
+
+INSERT INTO supply (supply_id, supply_type)
+VALUES (12, 'Laundry Supplies');
+
+INSERT INTO supply (supply_id, supply_type)
+VALUES (13, 'Outdoor Equipment');
+
+INSERT INTO supply (supply_id, supply_type)
+VALUES (14, 'Security Equipment');
+
+INSERT INTO supply (supply_id, supply_type)
+VALUES (15, 'Heating and Cooling');
+
+INSERT INTO supply (supply_id, supply_type)
+VALUES (16, 'Maintenance Tools');
+
+INSERT INTO supply (supply_id, supply_type)
+VALUES (17, 'Medical Supplies');
+
+INSERT INTO supply (supply_id, supply_type)
+VALUES (18, 'Entertainment');
+
+INSERT INTO supply (supply_id, supply_type)
+VALUES (19, 'Paint and Art Supplies');
+
+INSERT INTO supply (supply_id, supply_type)
+VALUES (20, 'Educational Materials');
+
+INSERT INTO dining_reservation (dining_reservation_id, number_of_guests, dining_time, national_id, staff_id, payment_id)
+VALUES (1, 2, TO_DATE('2023-12-02 18:30:00', 'YYYY-MM-DD HH24:MI:SS'), 9994388975, 6, 21);
+
+INSERT INTO dining_reservation (dining_reservation_id, number_of_guests, dining_time, national_id, staff_id, payment_id)
+VALUES (2, 2, TO_DATE('2023-12-02 17:30:00', 'YYYY-MM-DD HH24:MI:SS'), 6574007348, 6, 22);
+
+INSERT INTO dining_reservation (dining_reservation_id, number_of_guests, dining_time, national_id, staff_id, payment_id)
+VALUES (3, 1, TO_DATE('2023-12-05 19:00:00', 'YYYY-MM-DD HH24:MI:SS'), 6983765869, 6, 23);
+
+INSERT INTO dining_reservation (dining_reservation_id, number_of_guests, dining_time, national_id, staff_id, payment_id)
+VALUES (4, 1, TO_DATE('2023-11-25 20:00:00', 'YYYY-MM-DD HH24:MI:SS'), 9990053251, 6, 24);
+
+INSERT INTO dining_reservation (dining_reservation_id, number_of_guests, dining_time, national_id, staff_id, payment_id)
+VALUES (5, 3,TO_DATE('2023-12-08 18:45:00', 'YYYY-MM-DD HH24:MI:SS'), 9998244862, 16, 25);
+
+INSERT INTO dining_reservation (dining_reservation_id, number_of_guests, dining_time, national_id, staff_id, payment_id)
+VALUES (6, 2,TO_DATE('2023-10-09 19:30:00', 'YYYY-MM-DD HH24:MI:SS'), 7070592361, 16, 26);
+
+INSERT INTO dining_reservation (dining_reservation_id, number_of_guests, dining_time, national_id, staff_id, payment_id)
+VALUES (7, 1,TO_DATE('2023-06-13 19:30:00', 'YYYY-MM-DD HH24:MI:SS'), 4850106951, 16, 27);
+
+INSERT INTO dining_reservation (dining_reservation_id, number_of_guests, dining_time, national_id, staff_id, payment_id)
+VALUES (8, 2,TO_DATE('2023-12-13 19:30:00', 'YYYY-MM-DD HH24:MI:SS'), 9999491995, 16, 28);
+
+INSERT INTO dining_reservation (dining_reservation_id, number_of_guests, dining_time, national_id, staff_id, payment_id)
+VALUES (9, 4, TO_DATE('2023-12-16 19:15:00', 'YYYY-MM-DD HH24:MI:SS'), 7066077210, 6, 29);
+
+INSERT INTO dining_reservation (dining_reservation_id, number_of_guests, dining_time, national_id, staff_id, payment_id)
+VALUES (10, 2,TO_DATE('2023-07-14 19:15:00', 'YYYY-MM-DD HH24:MI:SS'), 9999491996, 6, 30);
+
+INSERT INTO dining_reservation (dining_reservation_id, number_of_guests, dining_time, national_id, staff_id, payment_id)
+VALUES (11, 2,TO_DATE('2023-12-17 19:15:00', 'YYYY-MM-DD HH24:MI:SS'), 6762636101, 6, 31);
+
+INSERT INTO dining_reservation (dining_reservation_id, number_of_guests, dining_time, national_id, staff_id, payment_id)
+VALUES (12, 1,TO_DATE('2023-12-27 15:15:00', 'YYYY-MM-DD HH24:MI:SS'), 9999799450, 6, 32);
+
+INSERT INTO dining_reservation (dining_reservation_id, number_of_guests, dining_time, national_id, staff_id, payment_id)
+VALUES (13, 2,TO_DATE('2023-12-28 20:00:00', 'YYYY-MM-DD HH24:MI:SS'), 6636114576, 16, 33);
+
+INSERT INTO dining_reservation (dining_reservation_id, number_of_guests, dining_time, national_id, staff_id, payment_id)
+VALUES (14, 1, TO_DATE('2023-12-20 18:45:00', 'YYYY-MM-DD HH24:MI:SS'), 9991122087, 6, 34);
+
+INSERT INTO dining_reservation (dining_reservation_id, number_of_guests, dining_time, national_id, staff_id, payment_id)
+VALUES (15, 1, TO_DATE('2024-01-01 19:30:00', 'YYYY-MM-DD HH24:MI:SS'), 4485197514, 6, 35);
+
+INSERT INTO dining_reservation (dining_reservation_id, number_of_guests, dining_time, national_id, staff_id, payment_id)
+VALUES (16, 2, TO_DATE('2023-12-03 18:30:00', 'YYYY-MM-DD HH24:MI:SS'), 9994388975, 6, 36);
+
+INSERT INTO dining_reservation (dining_reservation_id, number_of_guests, dining_time, national_id, staff_id, payment_id)
+VALUES (17, 2, TO_DATE('2023-12-03 17:30:00', 'YYYY-MM-DD HH24:MI:SS'), 6574007348, 6, 37);
+
+INSERT INTO dining_reservation (dining_reservation_id, number_of_guests, dining_time, national_id, staff_id, payment_id)
+VALUES (18, 1, TO_DATE('2023-12-06 19:00:00', 'YYYY-MM-DD HH24:MI:SS'), 6983765869, 6, 38);
+
+INSERT INTO dining_reservation (dining_reservation_id, number_of_guests, dining_time, national_id, staff_id, payment_id)
+VALUES (19, 1, TO_DATE('2023-11-26 20:00:00', 'YYYY-MM-DD HH24:MI:SS'), 9990053251, 6, 39);
+
+INSERT INTO dining_reservation (dining_reservation_id, number_of_guests, dining_time, national_id, staff_id, payment_id)
+VALUES (20, 3,TO_DATE('2023-12-09 18:45:00', 'YYYY-MM-DD HH24:MI:SS'), 9998244862, 16, 40);
+
+INSERT INTO phone (phone_number, country_code, national_id)
+VALUES ('123-456-7890', '+1', 9994388975);
+
+INSERT INTO phone (phone_number, country_code, national_id)
+VALUES ('234-567-8901', '+1', 6574007348);
+
+INSERT INTO phone (phone_number, country_code, national_id)
+VALUES ('345-678-9012', '+1', 6983765869);
+
+INSERT INTO phone (phone_number, country_code, national_id)
+VALUES ('456-789-0123', '+1', 9990053251);
+
+INSERT INTO phone (phone_number, country_code, national_id)
+VALUES ('567-890-1234', '+1', 9998244862);
+
+INSERT INTO phone (phone_number, country_code, national_id)
+VALUES ('678-901-2345', '+1', 7070592361);
+
+INSERT INTO phone (phone_number, country_code, national_id)
+VALUES ('789-012-3456', '+1', 4850106951);
+
+INSERT INTO phone (phone_number, country_code, national_id)
+VALUES ('890-123-4567', '+1', 9999491995);
+
+INSERT INTO phone (phone_number, country_code, national_id)
+VALUES ('901-234-5678', '+1', 7066077210);
+
+INSERT INTO phone (phone_number, country_code, national_id)
+VALUES ('012-345-6789', '+1', 9999491996);
+
+INSERT INTO phone (phone_number, country_code, national_id)
+VALUES ('123-456-7891', '+1', 6762636101);
+
+INSERT INTO phone (phone_number, country_code, national_id)
+VALUES ('234-567-8902', '+1', 9999799450);
+
+INSERT INTO phone (phone_number, country_code, national_id)
+VALUES ('345-678-9013', '+1', 6636114576);
+
+INSERT INTO phone (phone_number, country_code, national_id)
+VALUES ('456-789-0124', '+1', 9991122087);
+
+INSERT INTO phone (phone_number, country_code, national_id)
+VALUES ('567-890-1235', '+1', 4485197514);
+
+INSERT INTO phone (phone_number, country_code, national_id)
+VALUES ('678-901-2346', '+1', 4485352514);
+
+INSERT INTO phone (phone_number, country_code, national_id)
+VALUES ('789-012-3457', '+1', 9995435896);
+
+INSERT INTO phone (phone_number, country_code, national_id)
+VALUES ('890-123-4568', '+1', 6737426646);
+
+INSERT INTO phone (phone_number, country_code, national_id)
+VALUES ('901-234-5679', '+1', 99957545896);
+
+INSERT INTO phone (phone_number, country_code, national_id)
+VALUES ('012-345-6710', '+1', 4485352515);
+
+INSERT INTO email (email_address, national_id)
+VALUES ('john.doe@email.com', 9994388975);
+
+INSERT INTO email (email_address, national_id)
+VALUES ('jane.smith@email.com', 6574007348);
+
+INSERT INTO email (email_address, national_id)
+VALUES ('bob.smith@email.com', 6983765869);
+
+INSERT INTO email (email_address, national_id)
+VALUES ('emily.johnson@email.com', 9990053251);
+
+INSERT INTO email (email_address, national_id)
+VALUES ('michael.brown@email.com', 9998244862);
+
+INSERT INTO email (email_address, national_id)
+VALUES ('samantha.white@email.com', 7070592361);
+
+INSERT INTO email (email_address, national_id)
+VALUES ('david.lee@email.com', 4850106951);
+
+INSERT INTO email (email_address, national_id)
+VALUES ('sophia.rodriguez@email.com', 9999491995);
+
+INSERT INTO email (email_address, national_id)
+VALUES ('william.turner@email.com', 7066077210);
+
+INSERT INTO email (email_address, national_id)
+VALUES ('olivia.garcia@email.com', 9999491996);
+
+INSERT INTO email (email_address, national_id)
+VALUES ('ethan.kim@email.com', 6762636101);
+
+INSERT INTO email (email_address, national_id)
+VALUES ('ava.nguyen@email.com', 9999799450);
+
+INSERT INTO email (email_address, national_id)
+VALUES ('liam.patel@email.com', 6636114576);
+
+INSERT INTO email (email_address, national_id)
+VALUES ('emma.chen@email.com', 9991122087);
+
+INSERT INTO email (email_address, national_id)
+VALUES ('noah.ali@email.com', 4485197514);
+
+INSERT INTO email (email_address, national_id)
+VALUES ('mia.hernandez@email.com', 4485352514);
+
+INSERT INTO email (email_address, national_id)
+VALUES ('james.kim@email.com', 9995435896);
+
+INSERT INTO email (email_address, national_id)
+VALUES ('isabella.wong@email.com', 6737426646);
+
+INSERT INTO email (email_address, national_id)
+VALUES ('alexander.kumar@email.com', 99957545896);
+
+INSERT INTO email (email_address, national_id)
+VALUES ('berk.sengul@email.com', 4485352515);
+
+INSERT INTO dining_order (order_id, order_time, status, price, dining_reservation_id)
+VALUES (1, TO_DATE('2023-12-01', 'YYYY-MM-DD HH24:MI:SS'), 'Confirmed', 25.00, 1);
+
+INSERT INTO dining_order (order_id, order_time, status, price, dining_reservation_id)
+VALUES (2, TO_DATE('2023-12-02 18:30:00', 'YYYY-MM-DD HH24:MI:SS'), 'Confirmed', 22.00, 2);
+
+INSERT INTO dining_order (order_id, order_time, status, price, dining_reservation_id)
+VALUES (3, TO_DATE('2023-12-03 19:00:00', 'YYYY-MM-DD HH24:MI:SS'), 'Confirmed', 18.00, 3);
+
+INSERT INTO dining_order (order_id, order_time, status, price, dining_reservation_id)
+VALUES (4, TO_DATE('2023-12-04 20:00:00', 'YYYY-MM-DD HH24:MI:SS'), 'Confirmed', 12.00, 4);
+
+INSERT INTO dining_order (order_id, order_time, status, price, dining_reservation_id)
+VALUES (5, TO_DATE('2023-12-05 18:45:00', 'YYYY-MM-DD HH24:MI:SS'), 'Confirmed', 20.00, 5);
+
+INSERT INTO dining_order (order_id, order_time, status, price, dining_reservation_id)
+VALUES (6, TO_DATE('2023-12-06 19:30:00', 'YYYY-MM-DD HH24:MI:SS'), 'Confirmed', 15.00, 6);
+
+INSERT INTO dining_order (order_id, order_time, status, price, dining_reservation_id)
+VALUES (7, TO_DATE('2023-12-07 20:15:00', 'YYYY-MM-DD HH24:MI:SS'), 'Confirmed', 8.00, 7);
+
+INSERT INTO dining_order (order_id, order_time, status, price, dining_reservation_id)
+VALUES (8, TO_DATE('2023-12-08 18:00:00', 'YYYY-MM-DD HH24:MI:SS'), 'Confirmed', 16.00, 8);
+
+INSERT INTO dining_order (order_id, order_time, status, price, dining_reservation_id)
+VALUES (9, TO_DATE('2023-12-09 19:45:00', 'YYYY-MM-DD HH24:MI:SS'), 'Confirmed', 17.00, 9);
+
+INSERT INTO dining_order (order_id, order_time, status, price, dining_reservation_id)
+VALUES (10, TO_DATE('2023-12-10 20:30:00', 'YYYY-MM-DD HH24:MI:SS'), 'Confirmed', 10.00, 10);
+
+INSERT INTO dining_order (order_id, order_time, status, price, dining_reservation_id)
+VALUES (11, TO_DATE('2023-12-11 18:30:00', 'YYYY-MM-DD HH24:MI:SS'), 'Confirmed', 14.00, 11);
+
+INSERT INTO dining_order (order_id, order_time, status, price, dining_reservation_id)
+VALUES (12, TO_DATE('2023-12-12 19:15:00', 'YYYY-MM-DD HH24:MI:SS'), 'Confirmed', 13.00, 12);
+
+INSERT INTO dining_order (order_id, order_time, status, price, dining_reservation_id)
+VALUES (13, TO_DATE('2023-12-13 20:00:00', 'YYYY-MM-DD HH24:MI:SS'), 'Confirmed', 7.00, 13);
+
+INSERT INTO dining_order (order_id, order_time, status, price, dining_reservation_id)
+VALUES (14, TO_DATE('2023-12-14 18:45:00', 'YYYY-MM-DD HH24:MI:SS'), 'Confirmed', 19.00, 14);
+
+INSERT INTO dining_order (order_id, order_time, status, price, dining_reservation_id)
+VALUES (15, TO_DATE('2023-12-15 19:30:00', 'YYYY-MM-DD HH24:MI:SS'), 'Confirmed', 11.00, 15);
+
+INSERT INTO dining_order (order_id, order_time, status, price, dining_reservation_id)
+VALUES (16, TO_DATE('2023-12-16 20:15:00', 'YYYY-MM-DD HH24:MI:SS'), 'Confirmed', 9.00, 16);
+
+INSERT INTO dining_order (order_id, order_time, status, price, dining_reservation_id)
+VALUES (17, TO_DATE('2023-12-17 18:00:00', 'YYYY-MM-DD HH24:MI:SS'), 'Confirmed', 16.00, 17);
+
+INSERT INTO dining_order (order_id, order_time, status, price, dining_reservation_id)
+VALUES (18, TO_DATE('2023-12-18 18:45:00', 'YYYY-MM-DD HH24:MI:SS'), 'Confirmed', 13.00, 18);
+
+INSERT INTO dining_order (order_id, order_time, status, price, dining_reservation_id)
+VALUES (19, TO_DATE('2023-12-19 19:30:00', 'YYYY-MM-DD HH24:MI:SS'), 'Confirmed', 8.00, 19);
+
+INSERT INTO dining_order (order_id, order_time, status, price, dining_reservation_id)
+VALUES (20, TO_DATE('2023-12-20 20:15:00', 'YYYY-MM-DD HH24:MI:SS'), 'Confirmed', 10.00, 20);
+
+INSERT INTO menu_item (item_id, item_name, item_category, item_description, price)
+VALUES (1, 'Steak', 'Main Course', 'Grilled sirloin steak', 25.00);
+
+INSERT INTO menu_item (item_id, item_name, item_category, item_description, price)
+VALUES (2, 'Salmon', 'Main Course', 'Pan-seared salmon fillet', 22.00);
+
+INSERT INTO menu_item (item_id, item_name, item_category, item_description, price)
+VALUES (3, 'Chicken Alfredo', 'Main Course', 'Creamy chicken Alfredo pasta', 18.00);
+
+INSERT INTO menu_item (item_id, item_name, item_category, item_description, price)
+VALUES (4, 'Caesar Salad', 'Appetizer', 'Classic Caesar salad with dressing', 12.00);
+
+INSERT INTO menu_item (item_id, item_name, item_category, item_description, price)
+VALUES (5, 'Shrimp Scampi', 'Main Course', 'Garlic butter shrimp scampi', 20.00);
+
+INSERT INTO menu_item (item_id, item_name, item_category, item_description, price)
+VALUES (6, 'Caprese Bruschetta', 'Appetizer', 'Tomato, mozzarella, and basil bruschetta', 15.00);
+
+INSERT INTO menu_item (item_id, item_name, item_category, item_description, price)
+VALUES (7, 'Chocolate Lava Cake', 'Dessert', 'Warm chocolate cake with a molten center', 8.00);
+
+INSERT INTO menu_item (item_id, item_name, item_category, item_description, price)
+VALUES (8, 'Vegetarian Stir Fry', 'Main Course', 'Assorted vegetables in a savory stir fry', 16.00);
+
+INSERT INTO menu_item (item_id, item_name, item_category, item_description, price)
+VALUES (9, 'Mushroom Risotto', 'Main Course', 'Creamy mushroom risotto', 17.00);
+
+INSERT INTO menu_item (item_id, item_name, item_category, item_description, price)
+VALUES (10, 'Tiramisu', 'Dessert', 'Classic Italian coffee-flavored dessert', 10.00);
+
+INSERT INTO menu_item (item_id, item_name, item_category, item_description, price)
+VALUES (11, 'Spinach and Artichoke Dip', 'Appetizer', 'Creamy spinach and artichoke dip', 14.00);
+
+INSERT INTO menu_item (item_id, item_name, item_category, item_description, price)
+VALUES (12, 'Grilled Vegetable Wrap', 'Main Course', 'Grilled vegetables in a wrap', 13.00);
+
+INSERT INTO menu_item (item_id, item_name, item_category, item_description, price)
+VALUES (13, 'Lemon Sorbet', 'Dessert', 'Refreshing lemon-flavored sorbet', 7.00);
+
+INSERT INTO menu_item (item_id, item_name, item_category, item_description, price)
+VALUES (14, 'Beef Tacos', 'Main Course', 'Savory beef tacos with toppings', 19.00);
+
+INSERT INTO menu_item (item_id, item_name, item_category, item_description, price)
+VALUES (15, 'Fruit Salad', 'Appetizer', 'Fresh fruit salad with honey lime dressing', 11.00);
+
+INSERT INTO menu_item (item_id, item_name, item_category, item_description, price)
+VALUES (16, 'Cheesecake', 'Dessert', 'Classic New York-style cheesecake', 9.00);
+
+INSERT INTO menu_item (item_id, item_name, item_category, item_description, price)
+VALUES (17, 'Pesto Pasta', 'Main Course', 'Pasta with basil pesto and pine nuts', 16.00);
+
+INSERT INTO menu_item (item_id, item_name, item_category, item_description, price)
+VALUES (18, 'Mango Salsa', 'Appetizer', 'Fresh mango salsa with tortilla chips', 13.00);
+
+INSERT INTO menu_item (item_id, item_name, item_category, item_description, price)
+VALUES (19, 'Key Lime Pie', 'Dessert', 'Tangy key lime pie with graham cracker crust', 8.00);
+
+INSERT INTO menu_item (item_id, item_name, item_category, item_description, price)
+VALUES (20, 'Vegetable Spring Rolls', 'Appetizer', 'Crispy vegetable spring rolls', 10.00);
+
+INSERT INTO order_menu_item (order_id, item_id)
+VALUES (1, 1);
+
+INSERT INTO order_menu_item (order_id, item_id)
+VALUES (2, 2);
+
+INSERT INTO order_menu_item (order_id, item_id)
+VALUES (3, 3);
+
+INSERT INTO order_menu_item (order_id, item_id)
+VALUES (4, 4);
+
+INSERT INTO order_menu_item (order_id, item_id)
+VALUES (5, 5);
+
+INSERT INTO order_menu_item (order_id, item_id)
+VALUES (6, 6);
+
+INSERT INTO order_menu_item (order_id, item_id)
+VALUES (7, 7);
+
+INSERT INTO order_menu_item (order_id, item_id)
+VALUES (8, 8);
+
+INSERT INTO order_menu_item (order_id, item_id)
+VALUES (9, 9);
+
+INSERT INTO order_menu_item (order_id, item_id)
+VALUES (10, 10);
+
+INSERT INTO order_menu_item (order_id, item_id)
+VALUES (11, 11);
+
+INSERT INTO order_menu_item (order_id, item_id)
+VALUES (12, 12);
+
+INSERT INTO order_menu_item (order_id, item_id)
+VALUES (13, 13);
+
+INSERT INTO order_menu_item (order_id, item_id)
+VALUES (14, 14);
+
+INSERT INTO order_menu_item (order_id, item_id)
+VALUES (15, 15);
+
+INSERT INTO order_menu_item (order_id, item_id)
+VALUES (16, 16);
+
+INSERT INTO order_menu_item (order_id, item_id)
+VALUES (17, 17);
+
+INSERT INTO order_menu_item (order_id, item_id)
+VALUES (18, 18);
+
+INSERT INTO order_menu_item (order_id, item_id)
+VALUES (19, 19);
+
+INSERT INTO order_menu_item (order_id, item_id)
+VALUES (20, 20);
+
+INSERT INTO guest_reservation (national_id, reservation_id)
+VALUES (9994388975, 1);
+
+INSERT INTO guest_reservation (national_id, reservation_id)
+VALUES (6574007348, 2);
+
+INSERT INTO guest_reservation (national_id, reservation_id)
+VALUES (6983765869, 3);
+
+INSERT INTO guest_reservation (national_id, reservation_id)
+VALUES (9990053251, 4);
+
+INSERT INTO guest_reservation (national_id, reservation_id)
+VALUES (9998244862, 5);
+
+INSERT INTO guest_reservation (national_id, reservation_id)
+VALUES (7070592361, 6);
+
+INSERT INTO guest_reservation (national_id, reservation_id)
+VALUES (4850106951, 7);
+
+INSERT INTO guest_reservation (national_id, reservation_id)
+VALUES (9999491995, 8);
+
+INSERT INTO guest_reservation (national_id, reservation_id)
+VALUES (7066077210, 9);
+
+INSERT INTO guest_reservation (national_id, reservation_id)
+VALUES (9999491996, 10);
+
+INSERT INTO guest_reservation (national_id, reservation_id)
+VALUES (6762636101, 11);
+
+INSERT INTO guest_reservation (national_id, reservation_id)
+VALUES (9999799450, 12);
+
+INSERT INTO guest_reservation (national_id, reservation_id)
+VALUES (6636114576, 13);
+
+INSERT INTO guest_reservation (national_id, reservation_id)
+VALUES (9991122087, 14);
+
+INSERT INTO guest_reservation (national_id, reservation_id)
+VALUES (4485197514, 15);
+
+INSERT INTO guest_reservation (national_id, reservation_id)
+VALUES (4485352514, 16);
+
+INSERT INTO guest_reservation (national_id, reservation_id)
+VALUES (9995435896, 17);
+
+INSERT INTO guest_reservation (national_id, reservation_id)
+VALUES (6737426646, 18);
+
+INSERT INTO guest_reservation (national_id, reservation_id)
+VALUES (99957545896, 19);
+
+INSERT INTO guest_reservation (national_id, reservation_id)
+VALUES (4485352515, 20);
+
+INSERT INTO guest_reservation (national_id, reservation_id)
+VALUES (9993750441, 1);
+
+INSERT INTO guest_reservation (national_id, reservation_id)
+VALUES (6325067460, 1);
+
+INSERT INTO guest_reservation (national_id, reservation_id)
+VALUES (6081625664, 2);
+
+INSERT INTO guest_reservation (national_id, reservation_id)
+VALUES (9993341142, 5);
+
+INSERT INTO guest_reservation (national_id, reservation_id)
+VALUES (9998729564, 3);
+
+INSERT INTO guest_reservation (national_id, reservation_id)
+VALUES (6213867562, 9);
+
+INSERT INTO guest_reservation (national_id, reservation_id)
+VALUES (9997355121, 12);
+
+INSERT INTO guest_reservation (national_id, reservation_id)
+VALUES (9998610443, 15);
+
+INSERT INTO guest_reservation (national_id, reservation_id)
+VALUES (4618102209, 6);
+
+INSERT INTO guest_reservation (national_id, reservation_id)
+VALUES (9994436155, 2);
+
+INSERT INTO guest_reservation (national_id, reservation_id)
+VALUES (4495260308, 7);
+
+INSERT INTO guest_reservation (national_id, reservation_id)
+VALUES (9999641555, 12);
+
+INSERT INTO guest_reservation (national_id, reservation_id)
+VALUES (4599355488, 11);
+
+INSERT INTO guest_reservation (national_id, reservation_id)
+VALUES (9997860047, 19);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (1, 1, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (2, 1, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (3, 1, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (4, 1, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (5, 1, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (6, 1, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (7, 1, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (8, 1, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (9, 1, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (10, 1, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (11, 1, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (12, 1, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (13, 1, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (14, 1, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (15, 1, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (16, 1, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (17, 1, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (18, 1, 1);
+
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (1, 2, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (2, 2, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (3, 2, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (4, 2, 1);
+
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (1, 3, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (2, 3, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (3, 3, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (4, 3, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (5, 3, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (6, 3, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (7, 3, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (8, 3, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (9, 3, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (10, 3, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (11, 3, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (12, 3, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (13, 3, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (14, 3, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (15, 3, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (16, 3, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (17, 3, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (18, 3, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (19, 3, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (20, 3, 1);
+
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (1, 4, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (2, 4, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (3, 4, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (4, 4, 1);
+
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (1, 5, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (2, 5, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (3, 5, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (4, 5, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (5, 5, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (6, 5, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (7, 5, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (8, 5, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (9, 5, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (10, 5, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (11, 5, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (12, 5, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (13, 5, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (14, 5, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (15, 5, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (16, 5, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (17, 5, 1);
+
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (1, 6, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (2, 6, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (3, 6, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (4, 6, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (5, 6, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (6, 6, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (7, 6, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (8, 6, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (9, 6, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (10, 6, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (11, 6, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (12, 6, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (13, 6, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (14, 6, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (15, 6, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (16, 6, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (17, 6, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (18, 6, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (19, 6, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (20, 6, 1);
+
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (1, 7, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (2, 7, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (3, 7, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (4, 7, 1);
+
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (1, 8, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (2, 8, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (3, 8, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (4, 8, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (5, 8, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (6, 8, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (7, 8, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (8, 8, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (9, 8, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (10, 8, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (11, 8, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (12, 8, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (13, 8, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (14, 8, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (15, 8, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (16, 8, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (17, 8, 1);
+
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (1, 9, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (2, 9, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (3, 9, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (4, 9, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (5, 9, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (6, 9, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (7, 9, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (8, 9, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (9, 9, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (10, 9, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (11, 9, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (12, 9, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (13, 9, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (14, 9, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (15, 9, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (16, 9, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (17, 9, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (18, 9, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (19, 9, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (20, 9, 1);
+
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (1, 10, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (2, 10, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (3, 10, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (4, 10, 1);
+
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (1, 11, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (2, 11, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (3, 11, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (4, 11, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (5, 11, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (6, 11, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (7, 11, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (8, 11, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (9, 11, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (10, 11, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (11, 11, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (12, 11, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (13, 11, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (14, 11, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (15, 11, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (16, 11, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (17, 11, 1);
+
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (1, 12, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (2, 12, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (3, 12, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (4, 12, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (5, 12, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (6, 12, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (7, 12, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (8, 12, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (9, 12, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (10, 12, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (11, 12, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (12, 12, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (13, 12, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (14, 12, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (15, 12, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (16, 12, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (17, 12, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (18, 12, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (19, 12, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (20, 12, 1);
+
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (1, 13, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (2, 13, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (3, 13, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (4, 13, 1);
+
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (1, 14, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (2, 14, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (3, 14, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (4, 14, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (5, 14, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (6, 14, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (7, 14, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (8, 14, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (9, 14, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (10, 14, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (11, 14, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (12, 14, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (13, 14, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (14, 14, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (15, 14, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (16, 14, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (17, 14, 1);
+
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (1, 15, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (2, 15, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (3, 15, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (4, 15, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (5, 15, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (6, 15, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (7, 15, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (8, 15, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (9, 15, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (10, 15, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (11, 15, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (12, 15, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (13, 15, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (14, 15, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (15, 15, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (16, 15, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (17, 15, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (18, 15, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (19, 15, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (20, 15, 1);
+
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (1, 16, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (2, 16, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (3, 16, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (4, 16, 1);
+
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (1, 17, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (2, 17, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (3, 17, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (4, 17, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (5, 17, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (6, 17, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (7, 17, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (8, 17, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (9, 17, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (10, 17, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (11, 17, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (12, 17, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (13, 17, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (14, 17, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (15, 17, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (16, 17, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (17, 17, 1);
+
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (1, 18, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (2, 18, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (3, 18, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (4, 18, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (5, 18, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (6, 18, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (7, 18, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (8, 18, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (9, 18, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (10, 18, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (11, 18, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (12, 18, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (13, 18, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (14, 18, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (15, 18, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (16, 18, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (17, 18, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (18, 18, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (19, 18, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (20, 18, 1);
+
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (1, 19, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (2, 19, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (3, 19, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (4, 19, 1);
+
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (1, 20, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (2, 20, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (3, 20, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (4, 20, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (5, 20, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (6, 20, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (7, 20, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (8, 20, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (9, 20, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (10, 20, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (11, 20, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (12, 20, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (13, 20, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (14, 20, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (15, 20, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (16, 20, 1);
+
+INSERT INTO supply_room (supply_id, room_id, quantity)
+VALUES (17, 20, 1);
+
+INSERT INTO staff_supply (staff_id, supply_id)
+VALUES (1, 1);
+
+INSERT INTO staff_supply (staff_id, supply_id)
+VALUES (2, 2);
+
+INSERT INTO staff_supply (staff_id, supply_id)
+VALUES (3, 3);
+
+INSERT INTO staff_supply (staff_id, supply_id)
+VALUES (4, 4);
+
+INSERT INTO staff_supply (staff_id, supply_id)
+VALUES (5, 5);
+
+INSERT INTO staff_supply (staff_id, supply_id)
+VALUES (6, 6);
+
+INSERT INTO staff_supply (staff_id, supply_id)
+VALUES (7, 7);
+
+INSERT INTO staff_supply (staff_id, supply_id)
+VALUES (8, 8);
+
+INSERT INTO staff_supply (staff_id, supply_id)
+VALUES (9, 9);
+
+INSERT INTO staff_supply (staff_id, supply_id)
+VALUES (10, 10);
+
+INSERT INTO staff_supply (staff_id, supply_id)
+VALUES (11, 11);
+
+INSERT INTO staff_supply (staff_id, supply_id)
+VALUES (12, 12);
+
+INSERT INTO staff_supply (staff_id, supply_id)
+VALUES (13, 13);
+
+INSERT INTO staff_supply (staff_id, supply_id)
+VALUES (14, 14);
+
+INSERT INTO staff_supply (staff_id, supply_id)
+VALUES (15, 15);
+
+INSERT INTO staff_supply (staff_id, supply_id)
+VALUES (16, 16);
+
+INSERT INTO staff_supply (staff_id, supply_id)
+VALUES (17, 17);
+
+INSERT INTO staff_supply (staff_id, supply_id)
+VALUES (18, 18);
+
+INSERT INTO staff_supply (staff_id, supply_id)
+VALUES (19, 19);
+
+INSERT INTO staff_supply (staff_id, supply_id)
+VALUES (20, 20);
+
+CREATE OR REPLACE TRIGGER trg_check_availability
+BEFORE INSERT ON reservation
+FOR EACH ROW
+DECLARE
+    v_count INT;
+BEGIN
+    IF :NEW.check_in_date < TRUNC(SYSDATE) THEN
+        RAISE_APPLICATION_ERROR(-20003, 'The check-in date cannot be in the past.');
+    ELSE
+        SELECT COUNT(*)
+        INTO v_count
+        FROM reservation
+        WHERE room_id = :NEW.room_id
+            AND (:NEW.check_in_date < check_out_date AND :NEW.check_out_date > check_in_date);
+    
+        IF v_count > 0 THEN
+            RAISE_APPLICATION_ERROR(-20001, 'This room is already booked for the given dates.');
+        END IF;
+    END IF;
+END;
+/
+
+CREATE OR REPLACE TRIGGER trg_update_room_status
+AFTER INSERT OR UPDATE OF status ON reservation
+FOR EACH ROW
+WHEN (NEW.status = 'checked-in')
+BEGIN
+  UPDATE room
+  SET status = 'Occupied'
+  WHERE room_id = :NEW.room_id;
+END;
+/
